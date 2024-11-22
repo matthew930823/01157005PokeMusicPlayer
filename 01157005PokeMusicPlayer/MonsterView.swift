@@ -7,64 +7,76 @@
 
 import SwiftUI
 class MonsterAttributes: ObservableObject {
-    @Published var attributes: [String: Int] = [
-        "monster1": 10,
-        "monster2": 100
+    @Published var attributes: [String: [Int]] = [
+        "monster1": [10,10,3],//maxHP,HP,power
+        "monster2": [50,50,6]
     ]
+    @Published var isShaking: Bool = false
+    func applyDamage(to monster: String, damage: Int) {
+        guard var stats = attributes[monster] else { return }
+        stats[1] = max(0, stats[1] - damage)
+        attributes[monster] = stats
+    }
+    func getMonsterPower(for monster: String) -> Int? {
+        guard let stats = attributes[monster] else {
+            return nil
+        }
+        return stats[2] // 返回該怪物的 power
+    }
+    func getMonsterHP(for monster: String) -> Int? {
+        guard let stats = attributes[monster] else {
+            return nil
+        }
+        return stats[1] // 返回該怪物的 HP
+    }
+    func reset(){
+        var stats = attributes["monster1"]
+        stats![1] = (stats?[0])!
+        attributes["monster1"] = stats
+        stats = attributes["monster2"]
+        stats![1] = (stats?[0])!
+        attributes["monster2"] = stats
+    }
 }
-
 struct MonsterView: View {
     @EnvironmentObject var monsterAttributes: MonsterAttributes
-    let head: String
     
-    @State private var scale: CGFloat = 1.0
-    @State private var opacity: Double = 1.0
-    
+    let head:String
     var body: some View {
-        VStack {
-            // 头部的怪物图像
-            Image(head)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 200, height: 200)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(LinearGradient(gradient: Gradient(colors: [.yellow, .red]), startPoint: .top, endPoint: .bottom), lineWidth: 5))
-                .shadow(color: .black, radius: 10, x: 5, y: 5)
-                .scaleEffect(scale)  // 放大缩小动画
-                .opacity(opacity)  // 透明度渐变动画
-                .onAppear {
-                    // 动画效果：头部图像放大，并且透明度渐变
-                    withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                        scale = 1.2
-                        opacity = 0.5
-                    }
+        VStack{
+            if let stats = monsterAttributes.attributes[head], stats.count == 3 {
+                let maxHP = stats[0]
+                let HP = stats[1]
+                let healthPercentage = CGFloat(HP) / CGFloat(maxHP)
+                
+                Image(head)
+                    .resizable()
+                    .scaledToFit()
+                
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .frame(width: 300, height: 25)
+                        .foregroundColor(Color.gray.opacity(0.3)) // 背景色
+                    
+                    RoundedRectangle(cornerRadius: 10)
+                        .frame(width: 300 * healthPercentage, height: 25)
+                        .foregroundColor(healthPercentage > 0.5 ? .green : (healthPercentage > 0.2 ? .yellow : .red))
+                        .animation(.easeInOut(duration: 0.5), value: healthPercentage)
+                    
+                    Text("HP: \(HP) / \(maxHP)")
+                        .font(.title2)
                 }
-            
-            // 怪物的生命值（HP）
-            let HP: Int = monsterAttributes.attributes[head]!
-            Text("HP: \(HP)")
-                .font(.system(size: 30, weight: .bold))
-                .foregroundColor(HP > 50 ? .green : .red)
-                .padding(.top, 20)
-                .background(
-                    Capsule()
-                        .fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .top, endPoint: .bottom))
-                        .shadow(color: .black, radius: 5, x: 0, y: 5)
-                )
-                .padding(10)
-                .scaleEffect(1.1)
-                .animation(.spring(), value: HP)  // 添加弹性动画
+                .padding(.top, -20)
+            } else {
+                Text("Monster data unavailable")
+                    .font(.headline)
+                    .foregroundColor(.red)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RadialGradient(gradient: Gradient(colors: [.purple, .black]), center: .center, startRadius: 5, endRadius: 500)
-                .ignoresSafeArea()
-        )
-        .padding()
     }
 }
 
 #Preview {
     var monsterAttributes = MonsterAttributes()
-    MoㄙsterView(head: "monster1").environmentObject(monsterAttributes)
+    MonsterView(head: "monster2").environmentObject(monsterAttributes)
 }

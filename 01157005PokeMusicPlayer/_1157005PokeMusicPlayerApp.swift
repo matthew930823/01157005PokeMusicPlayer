@@ -6,12 +6,17 @@
 //
 
 import SwiftUI
+import AVFoundation
+import MediaPlayer
 
 @main
 struct _1157005PokeMusicPlayerApp: App {
+    
+    var monsterAttributes = MonsterAttributes()
+    var characterAttributes = CharacterAttributes()
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            pokeGame().environmentObject(characterAttributes).environmentObject(monsterAttributes)
         }
     }
 }

@@ -9,7 +9,17 @@ import SwiftUI
 
 struct MainView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        TabView{
+            Tab("遊戲", systemImage: "map.fill"){
+                var monsterAttributes = MonsterAttributes()
+                var characterAttributes = CharacterAttributes()
+                pokeGame().environmentObject(characterAttributes).environmentObject(monsterAttributes)
+            }
+            Tab("音樂", systemImage: "music.note"){
+                @StateObject var viewModel = MusicPlayerViewModel()
+                SongsListView(viewModel: viewModel)
+            }
+        }
     }
 }
 

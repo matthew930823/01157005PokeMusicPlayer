@@ -6,13 +6,27 @@
 //
 
 import SwiftUI
-
+class CharacterAttributes: ObservableObject {
+    @Published var attributes: [String: Color] = [
+        "head1": Color.green,
+        "head2": Color.red,
+        "head3": Color.blue
+    ]
+}
 struct CharacterBox: View {
+    @EnvironmentObject var characterAttributes: CharacterAttributes
+    let head:String
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ZStack{
+            let attribute:Color = characterAttributes.attributes[head]!
+            Image(head)
+                .resizable()
+                .scaledToFit()
+                .overlay(Rectangle().stroke(attribute, lineWidth: 5))
+        }
     }
 }
 
 #Preview {
-    CharacterBox()
+    CharacterBox(head:"head1")
 }

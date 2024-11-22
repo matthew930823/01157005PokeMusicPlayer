@@ -1,18 +1,26 @@
-//
-//  SongsListView.swift
-//  01157005PokeMusicPlayer
-//
-//  Created by user11 on 2024/11/12.
-//
-
 import SwiftUI
+import AVFoundation
+import MediaPlayer
 
 struct SongsListView: View {
+    @ObservedObject var viewModel: MusicPlayerViewModel  // 用來接收 viewModel
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationView {
+            List(viewModel.songTitles, id: \.self) { title in
+                NavigationLink(destination: ContentView(viewModel: viewModel, songTitle: title)) {
+                    Text(title)  // 顯示歌曲名稱
+                        .font(.title2)
+                        .padding()
+                }
+            }
+            .navigationBarTitle("Songs List")
+        }
     }
 }
 
+
 #Preview {
-    SongsListView()
+    @Previewable @StateObject var viewModel = MusicPlayerViewModel()
+    SongsListView(viewModel: viewModel)
 }
